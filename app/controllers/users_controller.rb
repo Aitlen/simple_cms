@@ -1,3 +1,45 @@
+class UsersController < ApplicationController
+
+before_action :confirm_logged_in, except: [:login, :attempt_login]
+
+
+
+def admin
+end
+
+def login
+end
+
+def attempt_login
+    if params[:email].present? && params[:password].present?
+      found_user = User.find_by_email(params[:email])
+      if found_user
+        authorized_user = found_user.authenticate(params[:password])
+      end
+    end
+    
+    if authorized_user
+      # mark user as logged in
+      session[:user_id] = authorized_user.id
+      session[:name] = authorized_user.name
+      flash[:success] = "Вы успешно вошли."
+      redirect_to(action: 'admin')
+    else
+      flash[:notice] = "Неверное имя/пароль."
+      redirect_to(:action => 'login')
+    end
+    end
+
+def logout
+    # удаление текущей сессии
+    session[:user_id] = nil
+    session[:name] = nil
+    flash[:success] = "Вы успешно вышли"
+    redirect_to(:action => "login")
+end
+
+
+
 def index
    @users = User.all
 end
@@ -39,3 +81,4 @@ end
     def user_params
       params.require(:user).permit(:name, :email, :password, :password_confirmation)
     end
+  end
